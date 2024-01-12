@@ -41,6 +41,9 @@ P.S. You can delete this when you're done too. It's your config now :)
 --  NOTE: Must happen before plugins are required (otherwise wrong leader will be used)
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
+-- User and email for 42 header 
+vim.g.user42 = 'iusantos'
+vim.g.mail42 = 'iusantos@student.42sp.org.br'
 
 -- Install package manager
 --    https://github.com/folke/lazy.nvim
@@ -71,7 +74,7 @@ require('lazy').setup({
   'tpope/vim-rhubarb',
 
   -- Detect tabstop and shiftwidth automatically
-  'tpope/vim-sleuth',
+--  'tpope/vim-sleuth',
 
   -- NOTE: This is where your plugins related to LSP can be installed.
   --  The configuration is done below. Search for lspconfig to find it below.
@@ -112,6 +115,14 @@ require('lazy').setup({
     },
   },
 
+  { -- Theme Solarized
+    'maxmx03/solarized.nvim',
+    config = function()
+      vim.cmd.colorscheme 'solarized'
+      vim.o.background = 'light'
+    end,
+  },
+
   { -- Theme inspired by Atom
     'navarasu/onedark.nvim',
     priority = 1000,
@@ -126,7 +137,7 @@ require('lazy').setup({
     opts = {
       options = {
         icons_enabled = false,
-        theme = 'onedark',
+        theme = 'solarized',
         component_separators = '|',
         section_separators = '',
       },
@@ -145,6 +156,15 @@ require('lazy').setup({
 
   -- "gc" to comment visual regions/lines
   { 'numToStr/Comment.nvim', opts = {} },
+
+  -- File explorer
+  {
+    "nvim-tree/nvim-tree.lua", version = "*",
+  dependencies = {"nvim-tree/nvim-web-devicons",},
+  config = function()
+    require("nvim-tree").setup {}
+  end,
+  },
 
   -- Fuzzy Finder (files, lsp, etc)
   { 'nvim-telescope/telescope.nvim', version = '*', dependencies = { 'nvim-lua/plenary.nvim' } },
@@ -227,6 +247,12 @@ vim.o.completeopt = 'menuone,noselect'
 
 -- NOTE: You should make sure your terminal supports this
 vim.o.termguicolors = true
+
+-- 42 Norm specs
+vim.opt.tabstop = 4
+vim.opt.softtabstop = 4
+vim.opt.shiftwidth = 4
+vim.opt.expandtab = false
 
 -- [[ Basic Keymaps ]]
 
@@ -405,7 +431,7 @@ end
 --  Add any additional override configuration in the following tables. They will be passed to
 --  the `settings` field of the server config. You must look up that documentation yourself.
 local servers = {
-  -- clangd = {},
+  clangd = {},
   -- gopls = {},
   -- pyright = {},
   -- rust_analyzer = {},
@@ -450,43 +476,44 @@ local luasnip = require 'luasnip'
 luasnip.config.setup {}
 
 cmp.setup {
-  snippet = {
-    expand = function(args)
-      luasnip.lsp_expand(args.body)
-    end,
-  },
-  mapping = cmp.mapping.preset.insert {
-    ['<C-d>'] = cmp.mapping.scroll_docs(-4),
-    ['<C-f>'] = cmp.mapping.scroll_docs(4),
-    ['<C-Space>'] = cmp.mapping.complete {},
-    ['<CR>'] = cmp.mapping.confirm {
-      behavior = cmp.ConfirmBehavior.Replace,
-      select = true,
-    },
-    ['<Tab>'] = cmp.mapping(function(fallback)
-      if cmp.visible() then
-        cmp.select_next_item()
-      elseif luasnip.expand_or_jumpable() then
-        luasnip.expand_or_jump()
-      else
-        fallback()
-      end
-    end, { 'i', 's' }),
-    ['<S-Tab>'] = cmp.mapping(function(fallback)
-      if cmp.visible() then
-        cmp.select_prev_item()
-      elseif luasnip.jumpable(-1) then
-        luasnip.jump(-1)
-      else
-        fallback()
-      end
-    end, { 'i', 's' }),
-  },
-  sources = {
-    { name = 'nvim_lsp' },
-    { name = 'luasnip' },
-  },
+ snippet = {
+   expand = function(args)
+     luasnip.lsp_expand(args.body)
+   end,
+ },
+ mapping = cmp.mapping.preset.insert {
+   ['<C-d>'] = cmp.mapping.scroll_docs(-4),
+   ['<C-f>'] = cmp.mapping.scroll_docs(4),
+   ['<C-Space>'] = cmp.mapping.complete {},
+   ['<CR>'] = cmp.mapping.confirm {
+     behavior = cmp.ConfirmBehavior.Replace,
+     select = true,
+   },
+   ['<Down>'] = cmp.mapping(function(fallback)
+     if cmp.visible() then
+       cmp.select_next_item()
+     elseif luasnip.expand_or_jumpable() then
+       luasnip.expand_or_jump()
+     else
+       fallback()
+     end
+   end, { 'i', 's' }),
+   ['<Up>'] = cmp.mapping(function(fallback)
+     if cmp.visible() then
+       cmp.select_prev_item()
+     elseif luasnip.jumpable(-1) then
+       luasnip.jump(-1)
+     else
+       fallback()
+     end
+   end, { 'i', 's' }),
+ },
+ sources = {
+   { name = 'nvim_lsp' },
+   { name = 'luasnip' },
+ },
 }
+
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
