@@ -146,12 +146,13 @@ require('lazy').setup({
 
   { -- Add indentation guides even on blank lines
     'lukas-reineke/indent-blankline.nvim',
+    main = "ibl",  -- version 3?
     -- Enable `lukas-reineke/indent-blankline.nvim`
     -- See `:help indent_blankline.txt`
-    opts = {
-      char = '┊',
-      show_trailing_blankline_indent = false,
-    },
+    -- opts = {
+    --   char = '┊',
+    --   show_trailing_blankline_indent = false,
+    -- },
   },
 
   -- "gc" to comment visual regions/lines
@@ -447,6 +448,11 @@ local servers = {
 
 -- Setup neovim lua configuration
 require('neodev').setup()
+
+--Indent blankline
+require('ibl').setup {
+    indent = {char = '┊'},
+  }
 
 -- nvim-cmp supports additional completion capabilities, so broadcast that to servers
 local capabilities = vim.lsp.protocol.make_client_capabilities()
