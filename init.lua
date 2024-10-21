@@ -61,6 +61,22 @@ if not vim.loop.fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
+-- default mappings for NvimTree
+local function my_on_attach(bufnr)
+  local api = require "nvim-tree.api"
+
+  local function opts(desc)
+    return { desc = "nvim-tree: " .. desc, buffer = bufnr, noremap = true, silent = true, nowait = true }
+  end
+
+  -- default mappings
+  api.config.mappings.default_on_attach(bufnr)
+
+  -- custom mappings
+  vim.keymap.set('n', '<C-t>', api.tree.toggle,        opts('Up'))
+  vim.keymap.set('n', '?',     api.tree.toggle_help,                  opts('Help'))
+end
+
 -- NOTE: Here is where you install your plugins.
 --  You can configure plugins using the `config` key.
 --
@@ -163,8 +179,31 @@ require('lazy').setup({
     "nvim-tree/nvim-tree.lua", version = "*",
   dependencies = {"nvim-tree/nvim-web-devicons",},
   config = function()
-    require("nvim-tree").setup {}
-  end,
+    require("nvim-tree").setup {
+				sort = {
+					sorter = "case_sensitive",
+						},
+				view = {
+  				  width = 30,
+						},
+				renderer = {
+  				  group_empty = true,
+							},
+				filters = {
+					dotfiles = true,
+				},
+				on_attach = my_on_attach,
+			}
+	end,
+  },
+
+  -- Generate compile commands (for clangd)
+  {
+    "leosmaia21/gcompilecommands.nvim",
+    opts = {
+      tmp_file_path = "$HOME/tmp/compilecommandsNEOVIM.json"
+    },
+    ft = { "c", "cpp" }, -- lazy load plugin only on C and C++ filetypes
   },
 
   -- Fuzzy Finder (files, lsp, etc)
@@ -288,6 +327,9 @@ require('telescope').setup {
     },
   },
 }
+
+-- TENTATIVA
+-- require('gcompilecommands.nvim').setup()
 
 -- Enable telescope fzf native, if installed
 pcall(require('telescope').load_extension, 'fzf')
@@ -434,7 +476,7 @@ end
 local servers = {
   clangd = {},
   -- gopls = {},
-  -- pyright = {},
+  pyright = {},
   -- rust_analyzer = {},
   -- tsserver = {},
 
@@ -490,7 +532,7 @@ cmp.setup {
  mapping = cmp.mapping.preset.insert {
    ['<C-d>'] = cmp.mapping.scroll_docs(-4),
    ['<C-f>'] = cmp.mapping.scroll_docs(4),
-   ['<C-Space>'] = cmp.mapping.complete {},
+   ['<C-y>'] = cmp.mapping.complete {},
    ['<CR>'] = cmp.mapping.confirm {
      behavior = cmp.ConfirmBehavior.Replace,
      select = true,
@@ -520,6 +562,22 @@ cmp.setup {
  },
 }
 
+-- --Making it easy to write markdown files
+-- vim.api.nvim_create_augroup('MarkdownSettings', { clear = true})
+--
+-- vim.api.nvim_create_autocmd('FileType', {
+--   group = 'MarkdownSettings',
+--   pattern = 'markdown',
+--   callback = function()
+--     vim.opt_local.wrap = false
+--     vim.opt_local.linebreak = true
+--     vim.opt_local.textwidth = 80
+--   end,
+-- })
 
--- The line beneath this is called `modeline`. See `:help modeline`
--- vim: ts=2 sts=2 sw=2 et
+-- Making neovim understand that files ending in .tpp are to be interpreted as
+-- .cpp files. For hightling and such
+vim.api.nvim_create_autocmd({"BufNewFile", "BufRead"}, {
+  pattern = {"*.tpp"},
+  command = "set filetype=cpp",
+})
